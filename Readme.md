@@ -16,9 +16,10 @@ This is a simple Todo application built with Node.js, Express, and MongoDB.
    cd sip-script-todo-list-app
    ```
 
-2. Install the dependencies:
+2. Install the dependencies on both client and server:
 
    ```sh
+   cd server 'and' cd client
    npm install
    ```
 
