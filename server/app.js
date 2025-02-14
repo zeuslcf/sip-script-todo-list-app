@@ -1,8 +1,9 @@
-const dotenv = require("dotenv");
-const uuidV4 = require("uuid").v4;
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
+const dotenv = require('dotenv');
+const uuidV4 = require('uuid').v4;
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const connectDB = require('./db');
 
 dotenv.config();
 const app = express();
@@ -11,66 +12,75 @@ const port = 8000;
 // Middleware to handle Cross Origin Resource Sharing
 app.use(cors());
 
-const connectionStr = `${process.env.TWIN_DB_CONNECTION_STRING}/${process.env.TWIN_DB_NAME}`;
+const connectionStr = `${process.env.DB_CONNECTION_STRING}/${process.env.DB_NAME}`;
 
-mongoose
-  .connect(connectionStr)
-  .then(() => {
-    console.log("Successfully connected to MongoDB");
-  })
-  .catch((error) => {
-    console.error("Error connecting to MongoDB:", error);
-  });
+connectDB(connectionStr);
 
-// Middleware to attach mongoose instance to req object
-app.use((req, res, next) => {
-  req.mongoose = mongoose.connection;
-  next();
-});
+// Store mongoose connection in app locals
+app.set('mongoose', mongoose.connection);
 
-app.get("/api", async (req, res) => {
-  const db = req.mongoose;
-  const todos = await db.collection("todos").find({}).toArray();
-  console.log("-----", todos);
-  res.send({
-    message: "Welcome: Todo API",
+app.get('/api', async (req, res) => {
+  res.status(200).send({
+    message: 'Welcome: Todo API',
   });
 });
 
-// Example route to demonstrate accessing mongoose instance
-app.get("/example", (req, res) => {
-  const db = req.mongoose;
-  res.send("Mongoose instance accessed");
+app.get('/ready', (req, res) => {
+  res.status(200).send({
+    ready: true,
+  });
 });
 
-app.get("/api/todos", (req, res) => {
-  const db = req.mongoose;
+app.get('/api/todos', (req, res) => {
+  const db = req.app.get('mongoose');
   const filter = req.params || {};
 
-  db.collection("todos")
-    .find(filter)
-    .toArray((err, result) => {
-      if (err) {
-        return res.status(500).send("Error fetching todos");
-      }
-      res.send(result);
-    });
+  const result = db.collection('todos').find(filter).toArray();
+
+  res.status(200).send(Array.from(result));
 });
 
-app.post("/api/todo", (req, res) => {
-  const db = req.mongoose;
+app.post('/api/todo', (req, res) => {
+  const db = req.app.get('mongoose');
   const payload = req.body;
-  const obj = {
+  const todo = {
     id: uuidV4(),
     ...payload,
   };
 
-  db.collection("todos").insertOne(obj, (err, result) => {
-    if (err) {
-      return res.status(500).send("Error inserting todo");
-    }
-    res.send(result);
-  });
+  const result = db.collection('todos').insertOne(todo);
+  if (result.insertedCount === 1) {
+    res.status(200).send(todo);
+  } else {
+    res.status(500).send({ message: 'Error creating todo!' });
+  }
+});
+
+app.put('/api/todo/:id', (req, res) => {
+  const db = req.app.get('mongoose');
+  const todoId = req.params.id;
+  const payload = req.body;
+
+  const result = db
+    .collection('todos')
+    .updateOne({ id: todoId }, { $set: payload });
+  if (result.modifiedCount === 1) {
+    res.status(200).send({ message: 'Todo updated successfully!' });
+  } else {
+    res.status(500).send({ message: 'Error updating todo!' });
+  }
+});
+
+app.delete('/api/todo/:id', (req, res) => {
+  const db = req.app.get('mongoose');
+  const todoId = req.params.id;
+
+  const result = db.collection('todos').deleteOne({ id: todoId });
+  if (result.deletedCount === 1) {
+    res.status(200).send({ message: 'Todo deleted successfully!' });
+  } else {
+    res.status(500).send({ message: 'Error deleting todo!' });
+  }
 });
 
 app.listen(port, () => {

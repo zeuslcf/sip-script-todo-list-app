@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Button, Form } from 'react-bootstrap';
 import { Plus } from 'react-bootstrap-icons';
-import { Todo } from '../TodoList/TodoList';
+import { ITodo } from '../TodoList/TodoList';
 import { v4 as uuidv4 } from 'uuid';
 
 interface ITodoList {
   showToast: (message: string) => void;
-  createTodo: (todo: Todo) => void;
+  createTodo: (todo: ITodo) => void;
 }
 
 const TodoForm: React.FC<ITodoList> = ({ showToast, createTodo }) => {
@@ -18,7 +18,7 @@ const TodoForm: React.FC<ITodoList> = ({ showToast, createTodo }) => {
       showToast('Please fill in the text before submitting!')
     }
 
-    const todo: Todo = {
+    const todo: ITodo = {
       id: uuidv4(),
       isComplete: false,
       title: input

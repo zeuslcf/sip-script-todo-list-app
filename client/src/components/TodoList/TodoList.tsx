@@ -4,12 +4,12 @@ import Todo from '../Todo/Todo';
 import TodoForm from '../TodoForm/TodoForm';
 
 interface ITodoList {
-  todos: Todo[];
-  setTodos: Dispatch<React.SetStateAction<Todo[]>>;
+  todos: ITodo[];
+  setTodos: Dispatch<React.SetStateAction<ITodo[]>>;
   showToast: (message: string) => void;
 }
 
-export interface Todo {
+export interface ITodo {
   id: string;
   title: string;
   isComplete: boolean;
@@ -17,7 +17,7 @@ export interface Todo {
 
 const TodoList: React.FC<ITodoList> = ({ todos, setTodos, showToast }) => {
 
-  const createTodo = (todo: Todo) => {
+  const createTodo = (todo: ITodo) => {
     const oldTodos = Array.from(todos);
     oldTodos.unshift(todo);
     setTodos(oldTodos);
