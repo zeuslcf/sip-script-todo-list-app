@@ -9,7 +9,27 @@ This is a simple Todo application built with Node.js, Express, and MongoDB.
 - Docker
 - Docker Compose
 
-## Installation
+## Running the Application
+
+### Using Docker Compose
+
+1. Clone the repository:
+
+   ```sh
+   git clone https://github.com/zeuslcf/sip-script-todo-list-app.git
+   cd sip-script-todo-list-app
+   ```
+
+2. Start the application using Docker Compose:
+
+   ```sh
+   docker-compose up --build
+   ```
+
+3. The server will be running at `http://localhost:8000`.
+4. The client will be running at `http://localhost:3000`.
+
+### Without Docker Compose
 
 1. Clone the repository:
 
@@ -32,37 +52,22 @@ This is a simple Todo application built with Node.js, Express, and MongoDB.
    DB_NAME=DATABASE_NAME
    ```
 
-## Running the Application
-
-### Using Docker Compose
-
-1. Start the application using Docker Compose:
-
-   ```sh
-   docker-compose up --build
-   ```
-
-2. The server will be running at `http://localhost:8000`.
-3. The client will be running at `http://localhost:3000`.
-
-### Without Docker Compose
-
-1. Start the application server:
+4. Start the application server:
 
    ```sh
    cd server
    npm run start
    ```
 
-2. Start the application client:
+5. Start the application client:
 
    ```sh
    cd client
    npm run start
    ```
 
-3. The server will be running at `http://localhost:8000`.
-4. The client will be running at `http://localhost:3000`.
+6. The server will be running at `http://localhost:8000`.
+7. The client will be running at `http://localhost:3000`.
 
 ## API Endpoints
 
