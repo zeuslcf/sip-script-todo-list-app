@@ -2,6 +2,7 @@ import React, { Dispatch } from 'react'
 import { Col, Container, Row } from 'react-bootstrap';
 import Todo from '../Todo/Todo';
 import TodoForm from '../TodoForm/TodoForm';
+import { apiBaseUrl } from "../../App";
 
 interface ITodoList {
   todos: ITodo[];
@@ -17,32 +18,69 @@ export interface ITodo {
 
 const TodoList: React.FC<ITodoList> = ({ todos, setTodos, showToast }) => {
 
-  const createTodo = (todo: ITodo) => {
-    const oldTodos = Array.from(todos);
-    oldTodos.unshift(todo);
-    setTodos(oldTodos);
-    showToast('Todo has been created!');
+  const createTodo = async (todo: Pick<ITodo, 'title' | 'isComplete'>) => {
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/todo`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(todo),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setTodos([data, ...todos]);
+        showToast('Todo has been created!');
+      } else {
+        throw new Error(data.message);
+      }
+    } catch (error) {
+      showToast("Error creating todo!");
+    }
   }
 
   /**
    * Update Todo to Complete/InComplete
    * @param id 
    */
-  const updateTodoStatus = (id: string) => {
-    const newTodos = todos.map(todo => {
-      if (todo.id === id) {
-        todo.isComplete = !todo.isComplete
-        showToast(`Todo status has been updated to ${todo.isComplete ? 'Finished' : 'Unfinished'}`)
+  const updateTodoStatus = async (id: string) => {
+    const todoToUpdate = todos.find(todo => todo.id === id);
+    if (todoToUpdate) {
+      const todoStatus = { isComplete: !todoToUpdate.isComplete };
+      try {
+        const response = await fetch(`${apiBaseUrl}/api/todo/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(todoStatus),
+        });
+        if (response.ok) {
+          setTodos(todos.map(todo => todo.id === id ? {...todo, ...todoStatus} : todo));
+          showToast(`Todo status has been updated to ${todoStatus.isComplete ? 'Finished' : 'Unfinished'}`);
+        } else {
+          const data = await response.json();
+          throw new Error(data.message);
+        }
+      } catch (error) {
+        showToast("Error updating todo!");
       }
-      return todo;
-    });
-    setTodos(newTodos);
+    } else {
+      showToast('No todo found to update!');
+    }
   }
 
-  const removeTodo = (id: string) => {
-    const newTodos = todos.filter(todo => todo.id !== id);
-    setTodos(newTodos);
-    showToast('Todo has been removed!');
+  /**
+   * Remove Todo from the list
+   */
+  const removeTodo = async (id: string) => {
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/todo/${id}`, { method: 'DELETE' });
+      if (response.ok) {
+        setTodos(todos.filter(todo => todo.id !== id));
+        showToast('Todo has been removed!');
+      } else {
+        showToast("Error deleting todo!");
+      }
+    } catch (error) {
+      showToast("Error deleting todo!");
+    }
   }
 
   /** Display a message if there's no todos in the list */
@@ -73,4 +111,4 @@ const TodoList: React.FC<ITodoList> = ({ todos, setTodos, showToast }) => {
   )
 }
 
-export default TodoList
+export default TodoList;

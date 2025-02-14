@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo
+    container_name: todo-mongo
+    ports:
+      - '27017:27017'
+    networks:
+      - todo-app-network
+
+  server:
+    build: ./server
+    container_name: todo-server
+    ports:
+      - '8000:8000'
+    environment:
+      - DB_CONNECTION_STRING=mongodb://todo-mongo:27017
+      - DB_NAME=todo
+    depends_on:
+      - mongo
+    networks:
+      - todo-app-network
+
+  client:
+    build: ./client
+    container_name: todo-client
+    ports:
+      - '3000:3000'
+    environment:
+      - REACT_APP_API_ENDPOINT=http://localhost:8000
+    depends_on:
+      - server
+    networks:
+      - todo-app-network
+
+networks:
+  todo-app-network:
+    driver: bridge

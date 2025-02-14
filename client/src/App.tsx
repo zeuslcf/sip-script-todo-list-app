@@ -3,16 +3,17 @@ import "./App.scss";
 import { Container, Spinner } from "react-bootstrap";
 import TodoList, { ITodo } from "./components/TodoList/TodoList";
 import AppHeader from "./components/AppHeader/AppHeader";
-import Toast from "./components/Toast/Toast"
+import Toast from "./components/Toast/Toast";
 
 export const ThemeContext = React.createContext("light");
-const apiBaseUrl = process.env.REACT_APP_API_ENDPOINT;
+export const apiBaseUrl = process.env.REACT_APP_API_ENDPOINT;
 
 function App() {
   const [theme, setTheme] = useState<string>("light");
   const [toastMessage, setToastMessage] = useState<string>("");
   const [todos, setTodos] = useState<ITodo[]>([]);
   const [isLoading, setLoading] = useState<boolean>(false);
+
   useEffect(() => {
     setLoading(true);
     // Load Todos from server

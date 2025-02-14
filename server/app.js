@@ -11,13 +11,7 @@ const port = 8000;
 
 // Middleware to handle Cross Origin Resource Sharing
 app.use(cors());
-
-const connectionStr = `${process.env.DB_CONNECTION_STRING}/${process.env.DB_NAME}`;
-
-connectDB(connectionStr);
-
-// Store mongoose connection in app locals
-app.set('mongoose', mongoose.connection);
+app.use(express.json());
 
 app.get('/api', async (req, res) => {
   res.status(200).send({
@@ -31,16 +25,16 @@ app.get('/ready', (req, res) => {
   });
 });
 
-app.get('/api/todos', (req, res) => {
+app.get('/api/todos', async (req, res) => {
   const db = req.app.get('mongoose');
   const filter = req.params || {};
 
-  const result = db.collection('todos').find(filter).toArray();
+  const result = await db.collection('todos').find(filter).toArray();
 
   res.status(200).send(Array.from(result));
 });
 
-app.post('/api/todo', (req, res) => {
+app.post('/api/todo', async (req, res) => {
   const db = req.app.get('mongoose');
   const payload = req.body;
   const todo = {
@@ -48,22 +42,22 @@ app.post('/api/todo', (req, res) => {
     ...payload,
   };
 
-  const result = db.collection('todos').insertOne(todo);
-  if (result.insertedCount === 1) {
+  const result = await db.collection('todos').insertOne(todo);
+  if (result.acknowledged) {
     res.status(200).send(todo);
   } else {
     res.status(500).send({ message: 'Error creating todo!' });
   }
 });
 
-app.put('/api/todo/:id', (req, res) => {
+app.put('/api/todo/:id', async (req, res) => {
   const db = req.app.get('mongoose');
   const todoId = req.params.id;
-  const payload = req.body;
+  const isComplete = req.body;
 
-  const result = db
+  const result = await db
     .collection('todos')
-    .updateOne({ id: todoId }, { $set: payload });
+    .updateOne({ id: todoId }, { $set: isComplete });
   if (result.modifiedCount === 1) {
     res.status(200).send({ message: 'Todo updated successfully!' });
   } else {
@@ -71,11 +65,11 @@ app.put('/api/todo/:id', (req, res) => {
   }
 });
 
-app.delete('/api/todo/:id', (req, res) => {
+app.delete('/api/todo/:id', async (req, res) => {
   const db = req.app.get('mongoose');
   const todoId = req.params.id;
 
-  const result = db.collection('todos').deleteOne({ id: todoId });
+  const result = await db.collection('todos').deleteOne({ id: todoId });
   if (result.deletedCount === 1) {
     res.status(200).send({ message: 'Todo deleted successfully!' });
   } else {
@@ -83,6 +77,14 @@ app.delete('/api/todo/:id', (req, res) => {
   }
 });
 
-app.listen(port, () => {
+const init = async () => {
+  const connectionStr = `${process.env.DB_CONNECTION_STRING}/${process.env.DB_NAME}`;
+  await connectDB(connectionStr)
+    // Store mongoose connection in app locals
+    .then((_) => app.set('mongoose', mongoose.connection));
+};
+
+app.listen(port, async () => {
+  await init();
   console.log(`Example app listening at http://localhost:${port}`);
 });

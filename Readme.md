@@ -6,6 +6,8 @@ This is a simple Todo application built with Node.js, Express, and MongoDB.
 
 - Node.js (v14 or higher)
 - MongoDB
+- Docker
+- Docker Compose
 
 ## Installation
 
@@ -31,6 +33,19 @@ This is a simple Todo application built with Node.js, Express, and MongoDB.
    ```
 
 ## Running the Application
+
+### Using Docker Compose
+
+1. Start the application using Docker Compose:
+
+   ```sh
+   docker-compose up --build
+   ```
+
+2. The server will be running at `http://localhost:8000`.
+3. The client will be running at `http://localhost:3000`.
+
+### Without Docker Compose
 
 1. Start the application server:
 
